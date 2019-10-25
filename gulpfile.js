@@ -35,7 +35,7 @@ const browserSync = require('browser-sync').create();
 function doWatchify() {
     let customOpts = {
         entries: 'src/index.js',
-        standalone: 'flvjs',
+        standalone: 'flv2canvas',
         debug: true,
         transform: ['babelify', 'browserify-versionify'],
         plugin: ['browserify-derequire']
@@ -55,7 +55,7 @@ function doWatchify() {
 function doBundle(b) {
     return b.bundle()
         .on('error', console.error.bind(console))
-        .pipe(source('flv.js'))
+        .pipe(source('flv2canvas.js'))
         .pipe(buffer())
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(sourcemaps.write('./'))

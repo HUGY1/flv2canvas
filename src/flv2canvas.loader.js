@@ -1,0 +1,42 @@
+import Polyfill from './utils/polyfill.js';
+
+// install polyfills
+Polyfill.install();
+
+function createPlayer(optionalConfig) {
+    if (optionalConfig && optionalConfig.url) {
+        console.log(optionalConfig.url);
+        // return new FlvPlayer(url, optionalConfig);
+    }
+}
+
+// feature detection
+function isSupported() {
+    return true;
+}
+
+let flv2canvasLoader = {};
+
+flv2canvasLoader.createPlayer = createPlayer;
+flv2canvasLoader.isSupported = isSupported;
+// flv2canvasLoader.getFeatureList = getFeatureList;
+
+// flv2canvasLoader.BaseLoader = BaseLoader;
+// flv2canvasLoader.LoaderStatus = LoaderStatus;
+// flv2canvasLoader.LoaderErrors = LoaderErrors;
+
+// flv2canvasLoader.Events = PlayerEvents;
+// flv2canvasLoader.ErrorTypes = ErrorTypes;
+// flv2canvasLoader.ErrorDetails = ErrorDetails;
+
+// flv2canvasLoader.FlvPlayer = FlvPlayer;
+// flv2canvasLoader.LoggingControl = LoggingControl;
+
+Object.defineProperty(flv2canvasLoader, 'version', {
+    enumerable: true,
+    get: function () {
+        // replaced by browserify-versionify transform
+        return '__VERSION__';
+    }
+});
+export default flv2canvasLoader;
