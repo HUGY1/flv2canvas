@@ -1,9 +1,14 @@
 
-import Flv2CanvasLoader from './flv2canvas.loader';
+import flv2canvasLoader from './flv2canvas.loader';
 
 class  flv2canvas {
     constructor(options) {
-        Flv2CanvasLoader.createPlayer(options);
+        let loader = this.loader = flv2canvasLoader.createLoader(options);
+        this.load();
+    }
+
+    load() { 
+        this.loader.load();
     }
 }
 export default flv2canvas;

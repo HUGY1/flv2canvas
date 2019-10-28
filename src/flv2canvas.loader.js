@@ -1,12 +1,12 @@
 import Polyfill from './utils/polyfill.js';
-
+import IOController from './loader/io-controller';
 // install polyfills
 Polyfill.install();
 
-function createPlayer(optionalConfig) {
+function createLoader(optionalConfig) {
     if (optionalConfig && optionalConfig.url) {
-        console.log(optionalConfig.url);
-        // return new FlvPlayer(url, optionalConfig);
+        this.ioctl = new IOController(optionalConfig);
+        return this.ioctl;
     }
 }
 
@@ -17,7 +17,7 @@ function isSupported() {
 
 let flv2canvasLoader = {};
 
-flv2canvasLoader.createPlayer = createPlayer;
+flv2canvasLoader.createLoader = createLoader;
 flv2canvasLoader.isSupported = isSupported;
 // flv2canvasLoader.getFeatureList = getFeatureList;
 

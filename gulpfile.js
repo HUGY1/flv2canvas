@@ -86,10 +86,10 @@ gulp.task('watch', ['clean'], function () {
             server: {
                 baseDir: './'
             },
-            port: 8000,
+            port: 9999,
             open: false
         });
-        require('opn')('http://localhost:8000/demo/index.html');
+        require('opn')('http://localhost:9999/demo/index.html');
     });
 });
 
