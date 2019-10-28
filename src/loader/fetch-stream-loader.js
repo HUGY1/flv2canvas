@@ -152,10 +152,12 @@ class FetchStreamLoader extends BaseLoader {
                 let chunk = result.value.buffer;
 
                 let byteStart = this._receivedLength;
-                console.log(chunk);
 
                 this._receivedLength += chunk.byteLength;
+
                 if (this._onDataArrival) {
+                    console.log(this._onDataArrival);
+
                     this._onDataArrival(chunk, byteStart, this._receivedLength);
                 }
 
