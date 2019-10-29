@@ -123,6 +123,7 @@ class FetchStreamLoader extends BaseLoader {
     _pump(reader) {  // ReadableStreamReader
 
         return reader.read().then((result) => {
+
             if (result.done) {
 
                 if (this._requestAbort === true) {
@@ -156,9 +157,12 @@ class FetchStreamLoader extends BaseLoader {
                 this._receivedLength += chunk.byteLength;
 
                 if (this._onDataArrival) {
-                    console.log(this._onDataArrival);
-
-                    this._onDataArrival(chunk, byteStart, this._receivedLength);
+                    try {
+                        this._onDataArrival(chunk, byteStart, this._receivedLength);
+                        
+                    } catch (error) {
+                        console.log(error);
+                    }
                 }
 
                 this._pump(reader);
