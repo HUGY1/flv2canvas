@@ -56,6 +56,8 @@ class IOController {
         } else if ((probeData = FLVDemuxer.probe(data)).match) {
             // Always create new FLVDemuxer
             this._demuxer = new FLVDemuxer(probeData, this._config);
+            this._demuxer.onVideoParseDone = this._onVideoParseDone.bind(this);
+            this._demuxer.onAudioParseDone = this._onAudioParseDone.bind(this);
 
             // if (!this._remuxer) {
             //     this._remuxer = new MP4Remuxer(this._config);
@@ -97,7 +99,15 @@ class IOController {
     }
 
     _onScriptDataArrived(data) {
-        this._emitter.emit(TransmuxingEvents.SCRIPTDATA_ARRIVED, data);
+        // this._emitter.emit(TransmuxingEvents.SCRIPTDATA_ARRIVED, data);
+    }
+
+    _onVideoParseDone(data) {
+        console.log('_onVideoParseDone', data);
+    }
+
+    _onAudioParseDone(data) {
+        console.log('_onAudioParseDone', data);
     }
 }
 

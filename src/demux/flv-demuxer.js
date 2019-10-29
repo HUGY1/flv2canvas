@@ -128,6 +128,8 @@ class FLVDemuxer {
         this._onScriptDataArrived = null;
         this._onTrackMetadata = null;
         this._onDataAvailable = null;
+        this.onAudioParseDone = null;
+        this.onVideoParseDone = null;
     }
 
     static probe(buffer) {
@@ -617,7 +619,7 @@ class FLVDemuxer {
                 });
                 let final = [];
                 final.push(...headers, ...aacSample.unit);
-                console.log('音频的结果', final);
+                // console.log('音频的结果', final);
             } else {
                 Log.e(this.TAG, `Flv: Unsupported AAC data type ${aacData.packetType}`);
             }
@@ -1119,8 +1121,8 @@ class FLVDemuxer {
             finalData[2] = 0;
             finalData[3] = 1;
 
-            console.log('最终输出', finalData);
-
+            // console.log('最终输出', finalData);
+            this.onVideoParseDone(finalData);
             let unit = { type: unitType, data: data };
             units.push(unit);
             length += data.byteLength;
