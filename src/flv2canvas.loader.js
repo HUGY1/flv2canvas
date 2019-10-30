@@ -3,22 +3,13 @@ import IOController from './loader/io-controller';
 // install polyfills
 Polyfill.install();
 
-function createLoader(optionalConfig) {
-    if (optionalConfig && optionalConfig.url) {
-        this.ioctl = new IOController(optionalConfig);
-        return this.ioctl;
-    }
-}
 
 // feature detection
 function isSupported() {
     return true;
 }
 
-let flv2canvasLoader = {};
 
-flv2canvasLoader.createLoader = createLoader;
-flv2canvasLoader.isSupported = isSupported;
 // flv2canvasLoader.getFeatureList = getFeatureList;
 
 // flv2canvasLoader.BaseLoader = BaseLoader;
@@ -32,11 +23,26 @@ flv2canvasLoader.isSupported = isSupported;
 // flv2canvasLoader.FlvPlayer = FlvPlayer;
 // flv2canvasLoader.LoggingControl = LoggingControl;
 
-Object.defineProperty(flv2canvasLoader, 'version', {
-    enumerable: true,
-    get: function () {
-        // replaced by browserify-versionify transform
-        return '__VERSION__';
+class Flv2CanvasLoader {
+    constructor(optionalConfig) {
+        this._config = optionalConfig;
     }
-});
-export default flv2canvasLoader;
+
+    createLoader() {
+        this.ioctl = new IOController(this._config);
+        this.ioctl.onVideoParseDone = this._onVideoParseDone.bind(this);
+        this.ioctl.onAudioParseDone = this._onAudioParseDone.bind(this);
+        return this.ioctl;
+    }
+
+    _onVideoParseDone(data) {
+        // post video h264 to woker
+    }
+
+    _onAudioParseDone(data) {
+        // post audio to woker
+    }
+}
+
+
+export default Flv2CanvasLoader;

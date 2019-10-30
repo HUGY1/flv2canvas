@@ -296,7 +296,6 @@ class FLVDemuxer {
             }
             offset += 4;
         }
-
         while (offset < chunk.byteLength) {
             this._dispatch = true;
 
@@ -620,6 +619,7 @@ class FLVDemuxer {
                 let final = [];
                 final.push(...headers, ...aacSample.unit);
                 // console.log('音频的结果', final);
+                this.onAudioParseDone(final);
             } else {
                 Log.e(this.TAG, `Flv: Unsupported AAC data type ${aacData.packetType}`);
             }
@@ -1039,9 +1039,9 @@ class FLVDemuxer {
             } else {
                 mi.mimeType = 'video/x-flv; codecs="' + mi.videoCodec + '"';
             }
-            if (mi.isComplete()) {
-                this._onMediaInfo(mi);
-            }
+            // if (mi.isComplete()) {
+                // this._onMediaInfo(mi);
+            // }
         }
 
         let ppsCount = v.getUint8(offset);  // numOfPictureParameterSets

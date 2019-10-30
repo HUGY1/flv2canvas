@@ -95,8 +95,6 @@ class FetchStreamLoader extends BaseLoader {
                         }
                     }
                 }
-                console.log(res.body.locked);
-
                 return this._pump.call(this, res.body.getReader());
             } else {
                 this._status = LoaderStatus.kError;
