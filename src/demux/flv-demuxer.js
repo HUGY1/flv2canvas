@@ -159,7 +159,7 @@ class FLVDemuxer {
     }
 
     bindDataSource(loader) {
-        loader.onDataArrival = this.parseChunks.bind(this);
+        // loader.onDataArrival = this.parseChunks.bind(this);
         return this;
     }
 
@@ -361,7 +361,7 @@ class FLVDemuxer {
         //         this._onDataAvailable(this._audioTrack, this._videoTrack);
         //     }
         // }
-
+        
         return offset;  // consumed bytes, just equals latest offset index
     }
 

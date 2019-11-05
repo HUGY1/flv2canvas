@@ -70,6 +70,7 @@ class IOController {
     }
 
     _onInitChunkArrival(data, byteStart) {
+
         let probeData = null;
         let consumed = 0;
         if (byteStart > 0) {
@@ -147,7 +148,6 @@ class IOController {
     }
 
     _onLoaderChunkArrival(chunk, byteStart, receivedLength) {
-        debugger;
         try {
             if (!this._onDataArrival) {
                 // throw new IllegalStateException('IOController: No existing consumer (onDataArrival) callback!');
