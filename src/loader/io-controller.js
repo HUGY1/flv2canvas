@@ -315,7 +315,6 @@ class IOController {
     }
 
     _dispatchChunks(chunks, byteStart) {
-        console.log(chunks);
         // this._currentRange.to = byteStart + chunks.byteLength - 1;
         return this._onInitChunkArrival(chunks, byteStart);
     }
