@@ -93,7 +93,5 @@ class flv2canvas {
             }
         }
     }
-
-
 }
 export default flv2canvas;
