@@ -12,6 +12,7 @@ class flv2canvas {
         this.options = options;
 
         this.loadCtl = new Flv2canvasLoader(options);
+        this.loadCtl.saveDts = this._saveDts.bind(this);
         let loader = this.loader = this.loadCtl.createLoader();
         this.initWorker();
         this.initRender();
@@ -88,6 +89,10 @@ class flv2canvas {
         console.log(this.canvasObj);
         document.body.append(this.canvasObj.canvas);
 
+        let last = Date.now();
+        let frameTimestamp = 0;
+        let diffTime = 0;
+
         doRender();
         function doRender() {
             self.interval = requestAnimationFrame(doRender);
@@ -104,18 +109,81 @@ class flv2canvas {
             }
 
 
-            if (self.videoBuffer[0]) {
-                self.renderFrame({
-                    canvasObj: self.canvasObj,
-                    data: self.videoBuffer[0],
-                    width: self.playWidth,
-                    height: self.playHeight
-                });
-                self.videoBuffer.shift();
+            if (self.videoDts.length === 0) {
+                last = Date.now();
+                return;
+            }
+
+            let now = Date.now();
+            frameTimestamp = frameTimestamp + (now - last);
+
+            last = Date.now();
+
+            /// 控制每一帧播放时间
+            // videoDts为视频播放的时间轴
+            if (frameTimestamp > (self.videoDts[1] - self.videoDts[0]) || frameTimestamp === (self.videoDts[1] - self.videoDts[0])) {
+
+                if (frameTimestamp > (self.videoDts[1] - self.videoDts[0])) {
+                    diffTime += frameTimestamp - (self.videoDts[1] - self.videoDts[0]);
+                }
+                if (diffTime >= 63) {
+                    diffTime = 0;
+                    self.videoBuffer.shift();
+                    self.videoDts.shift();
+                }
+
+                if (self.videoBuffer[0]) {
+                    self.renderFrame({
+                        canvasObj: self.canvasObj,
+                        data: self.videoBuffer[0],
+                        width: self.playWidth,
+                        height: self.playHeight
+                    });
+                    self.videoBuffer.shift();
+                } else {
+                    // console.log('没有数据');
+                }
+
+                frameTimestamp = 0;
+                self.videoDts.shift();
+            } 
+        }
+    }
+
+    _saveDts(dts) {
+
+        let videoDts = this.videoDts;
+        if (videoDts.length === 0) {
+            this.videoDts.push(dts);
+        } else if (videoDts.length === 1) {
+            if (dts > videoDts[0]) {
+                this.videoDts.push(dts);
             } else {
-                console.log('没有数据');
+                this.videoDts.unshift(dts);
             }
         }
+        else {
+            let isPush = false;
+            for (let i = 0; i < this.videoDts.length; i++) {
+                if (dts < this.videoDts[i] || dts === this.videoDts[i]) {
+
+                    let arr1 = videoDts.slice(0, i);
+                    let arr2 = videoDts.slice(i, videoDts.length);
+                    arr1.push(dts);
+                    this.videoDts = arr1.concat(arr2);
+
+                    isPush = true;
+                    break;
+                }
+            }
+
+            if (!isPush) {
+                this.videoDts.push(dts);
+            }
+
+        }
+
+
     }
 
     onPictureDecoded(buffer, width, height, infos) {
@@ -173,9 +241,9 @@ class flv2canvas {
         options = options || {};
 
         let obj = {};
-    
+
         obj.canvas = document.createElement('canvas');
-   
+
         obj.canvas.style.backgroundColor = '#0D0E1B';
 
 

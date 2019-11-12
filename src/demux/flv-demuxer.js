@@ -361,7 +361,7 @@ class FLVDemuxer {
         //         this._onDataAvailable(this._audioTrack, this._videoTrack);
         //     }
         // }
-        
+
         return offset;  // consumed bytes, just equals latest offset index
     }
 
@@ -1040,7 +1040,7 @@ class FLVDemuxer {
                 mi.mimeType = 'video/x-flv; codecs="' + mi.videoCodec + '"';
             }
             // if (mi.isComplete()) {
-                // this._onMediaInfo(mi);
+            // this._onMediaInfo(mi);
             // }
         }
 
@@ -1114,6 +1114,7 @@ class FLVDemuxer {
                 keyframe = true;
             }
 
+            // 最终输出数据 finalData
             let data = new Uint8Array(arrayBuffer, dataOffset + offset, lengthSize + naluSize);
             let finalData = new Uint8Array(arrayBuffer, dataOffset + offset, lengthSize + naluSize);
             finalData[0] = 0;
@@ -1121,13 +1122,39 @@ class FLVDemuxer {
             finalData[2] = 0;
             finalData[3] = 1;
 
-            // console.log('最终输出', finalData);
             this.onVideoParseDone(finalData);
             let unit = { type: unitType, data: data };
             units.push(unit);
             length += data.byteLength;
 
             offset += lengthSize + naluSize;
+            // this.saveDts(dts + cts);
+
+
+        }
+
+        if (units.length) {
+            let track = this._videoTrack;
+            let avcSample = {
+                units: units,
+                length: length,
+                isKeyframe: keyframe,
+                dts: dts,
+                cts: cts,
+                pts: (dts + cts)
+            };
+            if (keyframe) {
+                avcSample.fileposition = tagPosition;
+            }
+            // console.log('avcSample', avcSample)
+            // track.samples.push(avcSample);
+            // track.length += length;
+            // console.log(avcSample.units)
+            // console.log(avcSample.dts)
+            if (avcSample.dts == 0) {
+                // console.log(avcSample)
+            }
+            this.saveDts(avcSample.dts);
         }
     }
 

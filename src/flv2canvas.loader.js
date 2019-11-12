@@ -32,6 +32,7 @@ class Flv2CanvasLoader {
         this.ioctl = new IOController(this._config);
         this.ioctl.onVideoParseDone = this._onVideoParseDone.bind(this);
         this.ioctl.onAudioParseDone = this._onAudioParseDone.bind(this);
+        this.ioctl.saveDts = this._saveDts.bind(this);
         return this.ioctl;
     }
 
@@ -45,6 +46,10 @@ class Flv2CanvasLoader {
         });
     }
 
+    _saveDts(data) {
+        this.saveDts(data);
+
+    }
     _onAudioParseDone(data) {
         // post audio to woker
     }

@@ -14,7 +14,7 @@ class IOController {
         this._loaderClass = null;
         this._seekHandler = null;
 
-       
+
         this._emitter = new EventEmitter();
 
         this._stashUsed = 0;
@@ -27,8 +27,8 @@ class IOController {
             this._enableStash = false;
         }
 
-     
-   
+
+
         this._totalLength = this._refTotalLength;
         this._fullRequestFlag = false;
         this._currentRange = null;
@@ -44,7 +44,7 @@ class IOController {
     _selectLoader() {
         if (FetchStreamLoader.isSupported()) {
             this._loaderClass = FetchStreamLoader;
-        } 
+        }
         // else if (MozChunkedLoader.isSupported()) {
         //     this._loaderClass = MozChunkedLoader;
         // }  else {
@@ -83,6 +83,7 @@ class IOController {
             this._demuxer = new FLVDemuxer(probeData, this._config);
             this._demuxer.onVideoParseDone = this._onVideoParseDone.bind(this);
             this._demuxer.onAudioParseDone = this._onAudioParseDone.bind(this);
+            this._demuxer.saveDts = this._saveDts.bind(this);
 
             // if (!this._remuxer) {
             //     this._remuxer = new MP4Remuxer(this._config);
@@ -117,7 +118,7 @@ class IOController {
         } else {
             probeData = null;
             // Log.e(this.TAG, 'Non-FLV, Unsupported media type!');
-       
+
         }
 
         return consumed;
@@ -162,9 +163,9 @@ class IOController {
                     this._onRecoveredEarlyEof();
                 }
             }
-    
+
             this._speedSampler.addBytes(chunk.byteLength);
-    
+
             // adjust stash buffer size according to network speed dynamically
             let KBps = this._speedSampler.lastSecondKBps;
             if (KBps !== 0) {
@@ -174,7 +175,7 @@ class IOController {
                     this._adjustStashSize(normalized);
                 }
             }
-    
+
             if (!this._enableStash) {  // disable stash
                 if (this._stashUsed === 0) {
                     // dispatch chunk directly to consumer;
@@ -259,7 +260,7 @@ class IOController {
         } catch (error) {
             console.log(error);
         }
-       
+
 
 
     }
@@ -331,9 +332,13 @@ class IOController {
         this.onAudioParseDone(data);
     }
 
-    onVideoParseDone() {}
-    
-    onAudioParseDone() {}
+    _saveDts(data) {
+        this.saveDts(data);
+    }
+
+    onVideoParseDone() { }
+
+    onAudioParseDone() { }
 }
 
 export default IOController;
