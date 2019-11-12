@@ -5,38 +5,44 @@
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
     <title>flv2canvas.js demo</title>
     <style>
-        .liveCanvas{
-            opacity: .1;
+        .liveCanvas {
+            opacity: .04;
         }
     </style>
 </head>
 
 <body>
-    
+
     <button id="play">播放</button>
     <button id="stop">暂停</button>
+    <button id='destory'>销毁</button>
     <div class="mainContainer">
-       <canvas id='player' width='400' height='400'></canvas>
+        <canvas id='player'></canvas>
     </div>
 
     <script src="../dist/flv2canvas.js"></script>
-    
+
     <script>
-       let player = new flv2canvas({
-           url: 'http://tw.002cdn.com/obs/002.flv',
-           workFile: '/demo/decoder/flv2canvas.decoder.js',
-           canvasDom: document.getElementById('player')
-       })
+        let player = new flv2canvas({
+            url: 'http://tw.002cdn.com/obs/002.flv',
+            workFile: '/demo/decoder/flv2canvas.decoder.js',
+            canvasDom: document.getElementById('player')
+        })
 
-       document.getElementById('play').onclick = function(){
-        player.play()
-       }
+        document.getElementById('play').onclick = function () {
+            player.play()
+        }
 
-       document.getElementById('stop').onclick = function(){
-        player.stop()
-       }
+        document.getElementById('stop').onclick = function () {
+            player.stop()
+        }
+
+        document.getElementById('destory').onclick = function () {
+            document.getElementById('player').remove();
+            player.destory()
+        }
     </script>
-    
+
 </body>
 
 </html>

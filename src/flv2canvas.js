@@ -31,6 +31,20 @@ class flv2canvas {
         this.startPlay = false;
     }
 
+    destory() {
+        console.log('关闭播放器');
+        let self = this;
+        this.avc = null;
+        this.videoDts = [];
+        this.videoBuffer = [];
+        this.loadCtl.destroy();
+        if (this.worker) {
+            this.worker.terminate();
+        }
+
+        window.cancelAnimationFrame(self.interval);
+    }
+
     initWorker() {
         this.worker = new Worker(this.options.workFile);
         this.loadCtl.worker = this.worker;
@@ -85,17 +99,17 @@ class flv2canvas {
     initRender() {
         let self = this;
         this.renderFrame = this.renderFrameWebGL;
+        this.createCanvasObj = this.createCanvasWebGL;
 
-    
+        this.canvasObj = this.createCanvasObj();
         this.canvasObj.canvas = this.options.canvasDom;
-
+        console.log(this.canvasObj)
         let last = Date.now();
         let frameTimestamp = 0;
         let diffTime = 0;
 
         doRender();
         function doRender() {
-
             self.interval = requestAnimationFrame(doRender);
             if (!self.startPlay) return;
 
@@ -149,7 +163,7 @@ class flv2canvas {
 
                 frameTimestamp = 0;
                 self.videoDts.shift();
-            } 
+            }
         }
     }
 
@@ -232,10 +246,31 @@ class flv2canvas {
         });
 
         let self = this;
-        // self.recycleMemory(options.data);
+        self.recycleMemory(options.data);
     }
 
+    recycleMemory(parArray) {
+        this.worker.postMessage({ reuse: parArray.buffer }, [parArray.buffer]);
+    }
 
+    createCanvasWebGL(options) {
+        let canvasObj = this._createBasicCanvasObj(options);
+        // canvasObj.contextOptions = options.contextOptions;
+        return canvasObj;
+    }
+
+    _createBasicCanvasObj(options) {
+        options = options || {};
+
+        let obj = {};
+
+        obj.canvas = document.createElement('canvas');
+
+        obj.canvas.style.backgroundColor = '#0D0E1B';
+
+
+        return obj;
+    }
 
 }
 export default flv2canvas;

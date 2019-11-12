@@ -336,6 +336,11 @@ class IOController {
         this.saveDts(data);
     }
 
+    destroy() {
+        console.log('销毁')
+        this._loader.destroy();
+    }
+
     onVideoParseDone() { }
 
     onAudioParseDone() { }
