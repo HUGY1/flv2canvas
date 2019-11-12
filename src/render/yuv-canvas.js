@@ -183,11 +183,11 @@ class YUVCanvas {
         }
     
         this.contextGL = gl;
-        if (this.isWebGL()) {
-            document.getElementById('isWebGL').innerHTML = 'true';
-        } else {
-            document.getElementById('isWebGL').innerHTML = 'false';
-        }
+        // if (this.isWebGL()) {
+        //     document.getElementById('isWebGL').innerHTML = 'true';
+        // } else {
+        //     document.getElementById('isWebGL').innerHTML = 'false';
+        // }
     }
 
     initProgram() {
