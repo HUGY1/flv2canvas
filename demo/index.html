@@ -13,8 +13,10 @@
 
 <body>
     
+    <button id="play">播放</button>
+    <button id="stop">暂停</button>
     <div class="mainContainer">
-       
+       <canvas id='player' width='400' height='400'></canvas>
     </div>
 
     <script src="../dist/flv2canvas.js"></script>
@@ -22,8 +24,17 @@
     <script>
        let player = new flv2canvas({
            url: 'http://tw.002cdn.com/obs/002.flv',
-           workFile: '/demo/decoder/flv2canvas.decoder.js'
+           workFile: '/demo/decoder/flv2canvas.decoder.js',
+           canvasDom: document.getElementById('player')
        })
+
+       document.getElementById('play').onclick = function(){
+        player.play()
+       }
+
+       document.getElementById('stop').onclick = function(){
+        player.stop()
+       }
     </script>
     
 </body>

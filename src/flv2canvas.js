@@ -10,10 +10,10 @@ class flv2canvas {
         this.videoDts = [];
         this.startPlay = false;
         this.options = options;
-
+        this.canvasObj = {};
         this.loadCtl = new Flv2canvasLoader(options);
         this.loadCtl.saveDts = this._saveDts.bind(this);
-        let loader = this.loader = this.loadCtl.createLoader();
+        this.loader = this.loadCtl.createLoader();
         this.initWorker();
         this.initRender();
 
@@ -25,6 +25,10 @@ class flv2canvas {
 
     play() {
         this.startPlay = true;
+    }
+
+    stop() {
+        this.startPlay = false;
     }
 
     initWorker() {
@@ -79,15 +83,11 @@ class flv2canvas {
     }
 
     initRender() {
-        this.renderFrame = this.renderFrameWebGL;
-        this.createCanvasObj = this.createCanvasWebGL;
-
-
         let self = this;
+        this.renderFrame = this.renderFrameWebGL;
 
-        this.canvasObj = this.createCanvasObj();
-        console.log(this.canvasObj);
-        document.body.append(this.canvasObj.canvas);
+    
+        this.canvasObj.canvas = this.options.canvasDom;
 
         let last = Date.now();
         let frameTimestamp = 0;
@@ -95,7 +95,10 @@ class flv2canvas {
 
         doRender();
         function doRender() {
+
             self.interval = requestAnimationFrame(doRender);
+            if (!self.startPlay) return;
+
             if (self.videoBuffer.length > 70) {
                 // self.audioDts = [];
                 console.log('丢帧');
@@ -187,6 +190,7 @@ class flv2canvas {
     }
 
     onPictureDecoded(buffer, width, height, infos) {
+        if (document.hidden) return;
         this.playWidth = width;
         this.playHeight = height;
         this.videoBuffer.push(new Uint8Array(buffer));
@@ -194,7 +198,7 @@ class flv2canvas {
         if (this.videoBuffer.length > 50 && !this.startPlay) {
             console.log('clear', this.videoBuffer.length, this.videoDts.length);
             this.videoBuffer = [];
-            // self.videoDts = []
+            self.videoDts = [];
             let i = 0;
             while (i < 50) {
                 self.videoDts.shift();
@@ -231,24 +235,6 @@ class flv2canvas {
         // self.recycleMemory(options.data);
     }
 
-    createCanvasWebGL(options) {
-        let canvasObj = this._createBasicCanvasObj(options);
-        // canvasObj.contextOptions = options.contextOptions;
-        return canvasObj;
-    }
-
-    _createBasicCanvasObj(options) {
-        options = options || {};
-
-        let obj = {};
-
-        obj.canvas = document.createElement('canvas');
-
-        obj.canvas.style.backgroundColor = '#0D0E1B';
-
-
-        return obj;
-    }
 
 
 }
