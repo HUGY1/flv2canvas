@@ -38,7 +38,7 @@ class Flv2CanvasLoader {
 
     _onVideoParseDone(data) {
         // post video h264 to woker
-        // console.log(data);
+        console.log(data);
         // console.log(this.worker);
         this.worker.postMessage({
             type: 'sendArrayVideo',

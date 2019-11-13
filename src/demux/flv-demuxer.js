@@ -925,7 +925,6 @@ class FLVDemuxer {
         let track = this._videoTrack;
         let le = this._littleEndian;
         let v = new DataView(arrayBuffer, dataOffset, dataSize);
-
         if (!meta) {
             if (this._hasVideo === false && this._hasVideoFlagOverrided === false) {
                 this._hasVideo = true;
@@ -980,12 +979,17 @@ class FLVDemuxer {
             // Notice: Nalu without startcode header (00 00 00 01)
             let sps = new Uint8Array(arrayBuffer, dataOffset + offset, len);
             offset += len;
+            let finalsps = new Uint8Array(len + 4);
+            finalsps.set([0, 0, 0, 1], 0);
+            finalsps.set(sps, 4);
 
             let config = SPSParser.parseSPS(sps);
             if (i !== 0) {
                 // ignore other sps's config
                 continue;
             }
+            
+            this.onVideoParseDone(finalsps);
 
             meta.codecWidth = config.codec_size.width;
             meta.codecHeight = config.codec_size.height;
@@ -1061,6 +1065,12 @@ class FLVDemuxer {
             if (len === 0) {
                 continue;
             }
+
+            let pps = new Uint8Array(arrayBuffer, dataOffset + offset, len);
+            let finalpps = new Uint8Array(len + 4);
+            finalpps.set([0, 0, 0, 1], 0);
+            finalpps.set(pps, 4);
+            this.onVideoParseDone(finalpps);
 
             // pps is useless for extracting video information
             offset += len;
