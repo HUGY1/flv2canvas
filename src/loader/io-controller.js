@@ -337,7 +337,6 @@ class IOController {
     }
 
     destroy() {
-        console.log('销毁')
         this._loader.destroy();
     }
 

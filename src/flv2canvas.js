@@ -40,7 +40,9 @@ class flv2canvas {
         this.avc = null;
         this.videoDts = [];
         this.videoBuffer = [];
+        this.audioDts = [];
         this.loadCtl.destroy();
+        this.audioCtrl.destroy();
         if (this.worker) {
             this.worker.terminate();
         }
@@ -85,11 +87,12 @@ class flv2canvas {
                     if (!self.audioCtrl.sampleRate) {
                         self.audioCtrl.sampleRate = sampleRate;
                     }
-                    // self.doSaveAudioDts(dts, typeArr);
-                    console.log(self.audioDtsCur, self.videoDts[0]);
-                    if (self.audioDtsCur - 600 > self.videoDts[0]) return;
+                    self.doSaveAudioDts(dts, typeArr);
+                    // if (self.audioDtsCur + 600 > self.videoDts[0]) return;
+                    // console.log(self.audioDtsCur, self.videoDts[0]);
+
                     self.audioDtsCur = dts;
-                    self.audioCtrl.feed(typeArr);
+                    // self.audioCtrl.feed(typeArr);
                     break;
 
                 case 'playVideo':
@@ -128,28 +131,29 @@ class flv2canvas {
             self.interval = requestAnimationFrame(doRender);
             if (!self.startPlay) return;
 
-
-            // if (self.videoBuffer.length > 30) {
-            //     // self.audioDts = [];
-            //     console.log('丢帧');
-
-            //     var i = 0;
-            //     while (i <= 10) {
-            //         // 画面落后丢帧个数
-            //         self.videoBuffer.shift();
-            //         self.videoDts.shift();
-            //         i++;
+            // if (self.audioDts.length > 0) {
+            //     if (self.audioDts[0].dts < self.videoDts[0] + 1200) {
+            //         // console.log(self.audioDts[0].dts, self.videoDts[0])
+            //         console.log('声音慢了', self.audioDts.length);
+            //         self.audioDts.shift();
+            //         self.audioDts.shift();
+            //         self.audioDts.shift();
             //     }
             // }
 
-            // if (self.videoDts.length === 0) {
-            //     last = Date.now();
-            //     return;
-            // }
+
+            if (self.audioDts.length > 0) {
+                self.audioCtrl.feed(self.audioDts[0].buffer);
+                self.audioDts.shift();
+
+            }
+
             // 判断加载中
             if (noData > 400) {
                 console.log('重启');
-                self.restart();
+                if (self.restart) {
+                    self.restart();
+                }
             }
             if (noData > 50 && !isLoading && self.showLoading) {
                 isLoading = true;
@@ -195,9 +199,12 @@ class flv2canvas {
             if (diffTime < interval) {
                 return;
             }
-            // if (self.videoDts[0] - 600 >= self.audioDtsCur) {
-            //     return;
-            // }
+
+            // 对比时间戳
+            if (self.audioDtsCur < self.videoDts[0] + 1200) {
+                return;
+            }
+
             diffTime = diffTime % interval;
             if (self.videoBuffer[0]) {
                 self.renderFrame({
@@ -226,7 +233,7 @@ class flv2canvas {
         }
     }
     doSaveAudioDts(dts, buffer) {
-        if (!window.startPlay) return;
+        if (!this.startPlay) return;
         this.audioDts.push({
             dts: dts,
             buffer: buffer

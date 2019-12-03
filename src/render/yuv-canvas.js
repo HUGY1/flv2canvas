@@ -3,10 +3,6 @@ class YUVCanvas {
         parOptions = parOptions || {};
 
         this.canvasElement = parOptions.canvas || document.createElement('canvas');
-        this.canvasElement.style.top = '0';
-        this.canvasElement.style.left = '0';
-        this.canvasElement.style.position = 'relative';
-        this.canvasElement.className = 'liveCanvas';
         this.contextOptions = parOptions.contextOptions;
 
         this.type = parOptions.type || 'yuv420';

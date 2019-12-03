@@ -106,7 +106,7 @@ gulp.task('lint', function () {
 gulp.task('build', ['clean', 'lint'], function () {
     let b = browserify({
         entries: 'src/index.js',
-        standalone: 'flvjs',
+        standalone: 'flv2canvas',
         debug: true,
         transform: ['babelify', 'browserify-versionify'],
         plugin: ['browserify-derequire']
@@ -132,7 +132,7 @@ gulp.task('minimize', ['lint', 'build'], function () {
         }
     };
 
-    return gulp.src('dist/flv.js')
+    return gulp.src('dist/flv2canvas.js')
         .pipe(rename({extname: '.min.js'}))
         .pipe(sourcemaps.init({loadMaps: true}))
             .pipe(uglify(options))
