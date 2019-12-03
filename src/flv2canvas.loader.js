@@ -51,10 +51,14 @@ class Flv2CanvasLoader {
     }
     _onAudioParseDone(data) {
         // post audio to woker
+        this.worker.postMessage({
+            type: 'sendArrayAudio',
+            buffer: data
+        });
     }
 
     destroy() {
-        this.ioctl.destroy()
+        this.ioctl.destroy();
     }
 }
 

@@ -22,6 +22,17 @@ import SPSParser from './sps-parser.js';
 import DemuxErrors from './demux-errors.js';
 import MediaInfo from '../core/media-info.js';
 import { IllegalStateException } from '../utils/exception.js';
+function _toConsumableArray(arr) {
+    if (Array.isArray(arr)) {
+        let arr2  =  Array(arr.length);
+        for (let i = 0; i < arr.length; i++) {
+            arr2[i] = arr[i];
+        }
+        return arr2;
+    } else {
+        return Array.from(arr);
+    }
+}
 
 function Swap16(src) {
     return (((src >>> 8) & 0xFF) |
@@ -538,6 +549,12 @@ class FLVDemuxer {
                 meta.codec = misc.codec;
                 meta.originalCodec = misc.originalCodec;
                 meta.config = misc.config;
+                // added by qli5
+                meta.configRaw = misc.configRaw;
+                // added by Xmader
+                meta.audioObjectType = misc.audioObjectType;
+                meta.samplingFrequencyIndex = misc.samplingIndex;
+                meta.channelConfig = misc.channelCount;
                 // The decode result of an aac sample is 1024 PCM samples
                 meta.refSampleDuration = 1024 / meta.audioSampleRate * meta.timescale;
                 Log.v(this.TAG, 'Parsed AudioSpecificConfig');
@@ -584,7 +601,6 @@ class FLVDemuxer {
                     headers[1] |= (0 << 3);    // MPEG Version:0 for MPEG-4,1 for MPEG-2   1bit
                     headers[1] |= (0 << 1);    // Layer:0                                  2bits 
                     headers[1] |= 1;           // protection absent:1                      1bit
-
                     headers[2] = (audioObjectType - 1) << 6;            // profile:audio_object_type - 1                      2bits
                     headers[2] |= (samplingFrequencyIndex & 0x0f) << 2; // sampling frequency index:sampling_frequency_index  4bits 
                     headers[2] |= (0 << 1);                             // private bit:0                                      1bit
@@ -617,7 +633,8 @@ class FLVDemuxer {
                     adtsLen: aacSample.length + 7
                 });
                 let final = [];
-                final.push(...headers, ...aacSample.unit);
+                final.push.apply(final, _toConsumableArray(headers).concat(_toConsumableArray(aacSample.unit)));
+
                 // console.log('音频的结果', final);
                 this.onAudioParseDone(final);
             } else {
@@ -682,6 +699,39 @@ class FLVDemuxer {
         result.packetType = array[0];
 
         if (array[0] === 0) {
+            let getAdtsHeaders = function getAdtsHeaders(init) {
+                let audioObjectType = init.audioObjectType,
+                    samplingFrequencyIndex = init.samplingFrequencyIndex,
+                    channelConfig = init.channelConfig,
+                    adtsLen = init.adtsLen;
+
+                let headers = new Uint8Array(7);
+
+                headers[0] = 0xff; // syncword:0xfff                           高8bits
+                headers[1] = 0xf0; // syncword:0xfff                           低4bits
+                headers[1] |= 0 << 3; // MPEG Version:0 for MPEG-4,1 for MPEG-2   1bit
+                headers[1] |= 0 << 1; // Layer:0                                  2bits 
+                headers[1] |= 1; // protection absent:1                      1bit
+
+                headers[2] = audioObjectType - 1 << 6; // profile:audio_object_type - 1                      2bits
+                headers[2] |= (samplingFrequencyIndex & 0x0f) << 2; // sampling frequency index:sampling_frequency_index  4bits 
+                headers[2] |= 0 << 1; // private bit:0                                      1bit
+                headers[2] |= (channelConfig & 0x04) >> 2; // channel configuration:channel_config               高1bit
+
+                headers[3] = (channelConfig & 0x03) << 6; // channel configuration：channel_config     低2bits
+                headers[3] |= 0 << 5; // original：0                               1bit
+                headers[3] |= 0 << 4; // home：0                                   1bit
+                headers[3] |= 0 << 3; // copyright id bit：0                       1bit  
+                headers[3] |= 0 << 2; // copyright id start：0                     1bit
+
+                headers[3] |= (adtsLen & 0x1800) >> 11; // frame length：value    高2bits
+                headers[4] = (adtsLen & 0x7f8) >> 3; // frame length：value    中间8bits 
+                headers[5] = (adtsLen & 0x7) << 5; // frame length：value    低3bits
+                headers[5] |= 0x1f; // buffer fullness：0x7ff 高5bits 
+                headers[6] = 0xfc;
+
+                return headers;
+            };
             result.data = this._parseAACAudioSpecificConfig(arrayBuffer, dataOffset + 1, dataSize - 1);
         } else {
             result.data = array.subarray(1);
@@ -783,6 +833,9 @@ class FLVDemuxer {
         }
 
         return {
+            audioObjectType: audioObjectType, // audio_object_type,        added by Xmader
+            samplingIndex: samplingIndex, // sampling_frequency_index, added by Xmader
+            configRaw: array, // 
             config: config,
             samplingRate: samplingFrequence,
             channelCount: channelConfig,
@@ -988,7 +1041,7 @@ class FLVDemuxer {
                 // ignore other sps's config
                 continue;
             }
-            
+
             this.onVideoParseDone(finalsps);
 
             meta.codecWidth = config.codec_size.width;

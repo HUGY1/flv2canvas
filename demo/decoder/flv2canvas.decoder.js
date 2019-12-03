@@ -233,12 +233,12 @@ var xa=[NU,Ws,Ct,Br,GU,JU,FU,BU,CU,DU,IU,HU,AU,$Q,NU,NU];var ya=[$T];var za=[FT]
             }
            
            
-            if (!window.audioCtrl.sampleRate) {
-              console.log('sampleRate', sampleRate)
+            // if (!window.audioCtrl.sampleRate) {
+            //   console.log('sampleRate', sampleRate)
 
-              window.audioCtrl.sampleRate = sampleRate;
-            }
-            this.owner.doSaveAudioDts(dts,copyU8)
+            //   window.audioCtrl.sampleRate = sampleRate;
+            // }
+            // this.owner.doSaveAudioDts(dts,copyU8)
             // window.audioCtrl.feed(copyU8);
         }
     }
@@ -261,12 +261,11 @@ var xa=[NU,Ws,Ct,Br,GU,JU,FU,BU,CU,DU,IU,HU,AU,$Q,NU,NU];var ya=[$T];var za=[FT]
 
 // export default Decoder
 function Js_XuanyuOnAudioDecoded($buffer, length, sampleRate, channels, dts){
-
     if(global.isWorker){
         global.avc.Js_XuanyuOnAudioDecoded($buffer, length, sampleRate, channels, dts)
         return
     }
-    window.wsavc.decoder.Js_XuanyuOnAudioDecoded($buffer, length, sampleRate, channels, dts)
+    // window.wsavc.decoder.Js_XuanyuOnAudioDecoded($buffer, length, sampleRate, channels, dts)
    
 }
 

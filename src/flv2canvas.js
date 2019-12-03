@@ -2,12 +2,15 @@
 
 import Flv2canvasLoader from './flv2canvas.loader';
 import YuvCanvas from './render/yuv-canvas';
+import PCMPlayer from './audio/pcmplayer';
 class flv2canvas {
     constructor(options) {
         this.playWidth = 0;
         this.playHeight = 0;
         this.videoBuffer = [];
         this.videoDts = [];
+        this.audioDts = [];
+        this.audioDtsCur = 0;
         this.startPlay = false;
         this.options = options;
         this.canvasObj = {};
@@ -16,7 +19,7 @@ class flv2canvas {
         this.loader = this.loadCtl.createLoader();
         this.initWorker();
         this.initRender();
-
+        this.initAudio();
     }
 
     load() {
@@ -45,6 +48,15 @@ class flv2canvas {
         window.cancelAnimationFrame(self.interval);
     }
 
+    initAudio() {
+
+        // 新建音频播放器
+        this.audioCtrl = new PCMPlayer({
+            // sampleRate: sampleRate,
+            channels: 1
+        });
+    }
+
     initWorker() {
         this.worker = new Worker(this.options.workFile);
         this.loadCtl.worker = this.worker;
@@ -70,13 +82,14 @@ class flv2canvas {
                     let typeArr = e.data.buffer;
                     let sampleRate = e.data.sampleRate;
                     let dts = e.data.dts;
-                    if (!window.audioCtrl.sampleRate) {
-                        console.log('sampleRate', sampleRate);
-
-                        window.audioCtrl.sampleRate = sampleRate;
+                    if (!self.audioCtrl.sampleRate) {
+                        self.audioCtrl.sampleRate = sampleRate;
                     }
-                    self.doSaveAudioDts(dts, typeArr);
-                    window.audioCtrl.feed(typeArr);
+                    // self.doSaveAudioDts(dts, typeArr);
+                    console.log(self.audioDtsCur, self.videoDts[0]);
+                    if (self.audioDtsCur - 600 > self.videoDts[0]) return;
+                    self.audioDtsCur = dts;
+                    self.audioCtrl.feed(typeArr);
                     break;
 
                 case 'playVideo':
@@ -103,68 +116,121 @@ class flv2canvas {
 
         this.canvasObj = this.createCanvasObj();
         this.canvasObj.canvas = this.options.canvasDom;
-        console.log(this.canvasObj)
         let last = Date.now();
-        let frameTimestamp = 0;
         let diffTime = 0;
+        let noData = 0;
+        let fps = 20;
+        let interval = 1000 / fps;
+        let isLoading = false;
 
         doRender();
         function doRender() {
             self.interval = requestAnimationFrame(doRender);
             if (!self.startPlay) return;
 
-            if (self.videoBuffer.length > 70) {
-                // self.audioDts = [];
-                console.log('丢帧');
 
-                let i = 0;
-                while (i <= 15) { // 画面落后丢帧个数
-                    self.videoBuffer.shift();
-                    //   self.videoDts.shift();
-                    i++;
-                }
+            // if (self.videoBuffer.length > 30) {
+            //     // self.audioDts = [];
+            //     console.log('丢帧');
+
+            //     var i = 0;
+            //     while (i <= 10) {
+            //         // 画面落后丢帧个数
+            //         self.videoBuffer.shift();
+            //         self.videoDts.shift();
+            //         i++;
+            //     }
+            // }
+
+            // if (self.videoDts.length === 0) {
+            //     last = Date.now();
+            //     return;
+            // }
+            // 判断加载中
+            if (noData > 400) {
+                console.log('重启');
+                self.restart();
+            }
+            if (noData > 50 && !isLoading && self.showLoading) {
+                isLoading = true;
+                self.showLoading(true);
             }
 
+            if (self.videoBuffer.length === 0 && self.hasFixPosition) {
+                // console.log('没有数据noData', noData);
 
-            if (self.videoDts.length === 0) {
-                last = Date.now();
+                noData++;
                 return;
             }
+            if (isLoading && self.showLoading) {
+                self.showLoading(false);
+                isLoading = false;
+            }
+
+            noData = 0;
 
             let now = Date.now();
-            frameTimestamp = frameTimestamp + (now - last);
-
+            diffTime = diffTime + (now - last);
             last = Date.now();
 
-            /// 控制每一帧播放时间
-            // videoDts为视频播放的时间轴
-            if (frameTimestamp > (self.videoDts[1] - self.videoDts[0]) || frameTimestamp === (self.videoDts[1] - self.videoDts[0])) {
 
-                if (frameTimestamp > (self.videoDts[1] - self.videoDts[0])) {
-                    diffTime += frameTimestamp - (self.videoDts[1] - self.videoDts[0]);
-                }
-                if (diffTime >= 63) {
-                    diffTime = 0;
-                    self.videoBuffer.shift();
-                    self.videoDts.shift();
-                }
+            // 减速
+            if (self.videoBuffer.length < 10) {
+                fps = 15;
+                interval = 1000 / fps;
+            }
+            // 加速
+            if (self.videoBuffer.length > 35) {
+                fps = 25;
+                interval = 1000 / fps;
+            }
 
-                if (self.videoBuffer[0]) {
-                    self.renderFrame({
-                        canvasObj: self.canvasObj,
-                        data: self.videoBuffer[0],
-                        width: self.playWidth,
-                        height: self.playHeight
-                    });
-                    self.videoBuffer.shift();
-                } else {
-                    // console.log('没有数据');
-                }
+            if (self.videoBuffer.length > 25 && self.videoBuffer.length < 40) {
+                fps = 20;
+                interval = 1000 / fps;
+            }
 
-                frameTimestamp = 0;
+
+            // 满足帧数条件
+            if (diffTime < interval) {
+                return;
+            }
+            // if (self.videoDts[0] - 600 >= self.audioDtsCur) {
+            //     return;
+            // }
+            diffTime = diffTime % interval;
+            if (self.videoBuffer[0]) {
+                self.renderFrame({
+                    canvasObj: self.canvasObj,
+                    data: self.videoBuffer[0],
+                    width: self.playWidth,
+                    height: self.playHeight
+                });
                 self.videoDts.shift();
+                self.videoBuffer.shift();
+
+                if (!self.hasFixPosition) {
+                    if (self.fixPosition) {
+                        self.fixPosition();
+                    }
+                    if (self.showLoading) {
+                        self.showLoading(false);
+                    }
+
+                    console.log('Start to play,and fix position');
+                    self.hasFixPosition = true;
+                }
+            } else {
+                console.log('no data');
             }
         }
+    }
+    doSaveAudioDts(dts, buffer) {
+        if (!window.startPlay) return;
+        this.audioDts.push({
+            dts: dts,
+            buffer: buffer
+        });
     }
 
     _saveDts(dts) {

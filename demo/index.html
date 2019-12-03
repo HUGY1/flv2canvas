@@ -24,14 +24,17 @@
 
     <script>
         let player = new flv2canvas({
-            url: 'http://61.244.77.225:7980/live/test.flv',
-            // url: 'http://tw.002cdn.com/obs/002.flv',
+            // url: 'http://34.92.208.7:8080/live/vip1-02hd.flv',
+            url: 'http://live.vpcdn.com/obs/012.flv',
             workFile: '/demo/decoder/flv2canvas.decoder.js',
             canvasDom: document.getElementById('player')
         })
 
         document.getElementById('play').onclick = function () {
             player.play()
+            if (!window.audioCtx) return
+        
+            window.audioCtx.resume()
         }
 
         document.getElementById('stop').onclick = function () {
