@@ -233,6 +233,7 @@ class flv2canvas {
         }
     }
     doSaveAudioDts(dts, buffer) {
+        if (document.hidden) return;
         if (!this.startPlay) return;
         this.audioDts.push({
             dts: dts,
