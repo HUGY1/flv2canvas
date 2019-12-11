@@ -14,10 +14,7 @@ class flv2canvas {
         this.startPlay = false;
         this.options = options;
         this.canvasObj = {};
-        this.loadCtl = new Flv2canvasLoader(options);
-        this.loadCtl.saveDts = this._saveDts.bind(this);
-        this.loader = this.loadCtl.createLoader();
-        this.initWorker();
+
         this.initRender();
         this.initAudio();
     }
@@ -26,7 +23,12 @@ class flv2canvas {
         this.loader.load();
     }
 
-    play() {
+    play(url) {
+        this.options.url = url;
+        this.loadCtl = new Flv2canvasLoader(this.options);
+        this.loadCtl.saveDts = this._saveDts.bind(this);
+        this.loader = this.loadCtl.createLoader();
+        this.initWorker();
         this.startPlay = true;
     }
 

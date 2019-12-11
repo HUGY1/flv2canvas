@@ -16,6 +16,7 @@
     <button id="play">播放</button>
     <button id="stop">暂停</button>
     <button id='destory'>销毁</button>
+    <button id='sound'>声音</button>
     <div class="mainContainer">
         <canvas id='player'></canvas>
     </div>
@@ -25,13 +26,17 @@
     <script>
         let player = new flv2canvas({
             // url: 'http://34.92.208.7:8080/live/vip1-02hd.flv',
-            url: 'http://live.vpcdn.com/obs/012.flv',
             workFile: '/demo/decoder/flv2canvas.decoder.js',
             canvasDom: document.getElementById('player')
         })
 
+        document.getElementById('sound').onclick = function () {
+            if (!window.audioCtx) return
+        
+            window.audioCtx.resume()
+        }
         document.getElementById('play').onclick = function () {
-            player.play()
+            player.play('http://live.vpcdn.com/obs/012.flv')
             if (!window.audioCtx) return
         
             window.audioCtx.resume()
